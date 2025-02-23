@@ -25,7 +25,8 @@ def chat():
     user_message = data.get('message', '')
     
     # Construct the prompt
-    prompt = f"{user_message}"
+    prompt = f"Please summarize the following pharmaceutical text in a clear and concise way: {user_message}"
+
     
     # Call Ollama API
     response = requests.post(
