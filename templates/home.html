@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharma Chat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-green: #39ff14;
+            --neon-orange: #ff6b35;
+        }
+        
+        body {
+            background-color: #111111;
+        }
+        
+        .chat-container {
+            background: #1a1a1a;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.05) 5%, transparent 6%),
+                radial-gradient(circle at 85% 85%, rgba(57, 255, 20, 0.05) 5%, transparent 6%);
+            background-size: 30px 30px;
+            height: calc(100vh - 80px);
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            margin: 8px;
+            padding: 12px;
+            border-radius: 16px;
+            position: relative;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .user-message {
+            background: var(--neon-blue);
+            color: black;
+            margin-left: auto;
+            border-radius: 16px 16px 4px 16px;
+        }
+        
+        .bot-message {
+            background: #2a2a2a;
+            color: var(--neon-green);
+            border-radius: 16px 16px 16px 4px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+        }
+        
+        .typing-indicator {
+            display: none;
+            padding: 20px;
+            color: var(--neon-orange);
+        }
+        
+        .typing-indicator.active {
+            display: flex;
+        }
+        
+        .message-timestamp {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            margin-top: 4px;
+            text-align: right;
+        }
+        
+        .input-area {
+            background: #2a2a2a;
+            border-top: 2px solid rgba(0, 243, 255, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-2xl mx-auto h-screen flex flex-col">
+        <!-- Header -->
+        <header class="bg-gray-900 p-4 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-[var(--neon-blue)] flex items-center justify-center">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold text-[var(--neon-blue)]">PharmaSummarizer</h1>
+                <p class="text-sm text-[var(--neon-green)]">DeepSeek-R1 8B</p>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+        <div class="chat-container flex-1 overflow-y-auto p-4" id="chatContainer">
+            <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator pl-4" id="typingIndicator">
+            <div class="flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse" style="animation-delay: 0.4s"></div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="input-area p-4">
+            <form id="chatForm" class="flex gap-2">
+                <input type="text" id="messageInput" 
+                    class="flex-1 rounded-full px-4 py-3 bg-gray-800 text-white border-2 border-[var(--neon-blue)] focus:outline-none focus:border-[var(--neon-green)] transition-colors"
+                    placeholder="Enter pharmaceutical text...">
+                <button type="submit" 
+                    class="bg-[var(--neon-blue)] text-black px-6 py-2 rounded-full hover:bg-[var(--neon-green)] transition-colors flex items-center gap-2">
+                    <span>Send</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                    </svg>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const chatContainer = document.getElementById('chatContainer');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const chatForm = document.getElementById('chatForm');
+        const messageInput = document.getElementById('messageInput');
+
+        function getCurrentTime() {
+            return new Date().toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true 
+            });
+        }
+
+        function addMessage(content, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message-bubble ${isUser ? 'user-message' : 'bot-message'}`;
+            
+            const messageContent = document.createElement('div');
+            messageContent.textContent = content;
+            
+            const timestamp = document.createElement('div');
+            timestamp.className = 'message-timestamp';
+            timestamp.textContent = getCurrentTime();
+            
+            messageDiv.appendChild(messageContent);
+            messageDiv.appendChild(timestamp);
+            
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            typingIndicator.classList.add('active');
+        }
+
+        function hideTypingIndicator() {
+            typingIndicator.classList.remove('active');
+        }
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Add user message
+            addMessage(message, true);
+            messageInput.value = '';
+
+            // Show typing indicator
+            showTypingIndicator();
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                const data = await response.json();
+                
+                // Hide typing indicator and add bot response
+                hideTypingIndicator();
+                if (data.error) {
+                    addMessage('Sorry, I encountered an error. Please try again.');
+                } else {
+                    addMessage(data.response);
+                }
+            } catch (error) {
+                hideTypingIndicator();
+                addMessage('Sorry, I encountered an error. Please try again.');
+                console.error('Error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
