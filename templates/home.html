@@ -3,117 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pharma Chat</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <title>PharmaSummarizer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <script>
+        // Check for saved theme preference or use system preference on page load
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
     <style>
+        /* Define dark mode specific styles */
         :root {
-            --neon-blue: #00f3ff;
-            --neon-green: #39ff14;
-            --neon-orange: #ff6b35;
+            --bg-primary: #f9fafb;
+            --bg-secondary: #ffffff;
+            --text-primary: #111827;
+            --text-secondary: #4b5563;
+            --border-color: #e5e7eb;
+            --input-bg: #f3f4f6;
+            --scrollbar-thumb: #d1d5db;
+        }
+        
+        /* Apply dark mode colors when .dark class is present */
+        .dark {
+            --bg-primary: #111827;
+            --bg-secondary: #1f2937;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #374151;
+            --input-bg: #374151;
+            --scrollbar-thumb: #4b5563;
         }
         
         body {
-            background-color: #111111;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
         }
-        
+
         .chat-container {
-            background: #1a1a1a;
-            background-image: 
-                radial-gradient(circle at 15% 15%, rgba(0, 243, 255, 0.05) 5%, transparent 6%),
-                radial-gradient(circle at 85% 85%, rgba(57, 255, 20, 0.05) 5%, transparent 6%);
-            background-size: 30px 30px;
-            height: calc(100vh - 80px);
+            background-color: var(--bg-secondary);
+            transition: background-color 0.3s, box-shadow 0.3s;
         }
-        
+
         .message-bubble {
             max-width: 80%;
             margin: 8px;
-            padding: 12px;
-            border-radius: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
             position: relative;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s, color 0.3s;
         }
-        
+
         .user-message {
-            background: var(--neon-blue);
-            color: black;
+            color: #ffffff;
             margin-left: auto;
-            border-radius: 16px 16px 4px 16px;
+            border-radius: 8px 8px 0 8px;
+            background-image: linear-gradient(to right, #4f46e5, #3b82f6);
         }
-        
+
         .bot-message {
-            background: #2a2a2a;
-            color: var(--neon-green);
-            border-radius: 16px 16px 16px 4px;
-            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 8px 8px 8px 0;
+            background-color: var(--input-bg);
+            color: var(--text-primary);
         }
-        
+
         .typing-indicator {
             display: none;
-            padding: 20px;
-            color: var(--neon-orange);
+            padding: 12px;
+            color: var(--text-secondary);
         }
-        
+
         .typing-indicator.active {
             display: flex;
         }
-        
+
         .message-timestamp {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             opacity: 0.7;
             margin-top: 4px;
             text-align: right;
         }
-        
+
         .input-area {
-            background: #2a2a2a;
-            border-top: 2px solid rgba(0, 243, 255, 0.2);
+            background-color: var(--bg-secondary);
+            border-color: var(--border-color);
+            transition: background-color 0.3s, border-color 0.3s;
         }
+
+        .send-button {
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+
+        .theme-toggle {
+            cursor: pointer;
+        }
+
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            border-radius: 3px;
+            background-color: var(--scrollbar-thumb);
+        }
+
+        /* Added animation for error notifications */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .shake {
+            animation: shake 0.6s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        
+        .header-container {
+            background-color: var(--bg-secondary);
+        }
+        
+        .message-input {
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .bot-message strong {
+    color: #4f46e5;
+    font-weight: 600;
+}
+
+.dark .bot-message strong {
+    color: #818cf8;
+}
+
+.bot-message span {
+    display: inline-block;
+}
+
+/* Improve spacing between bullet points */
+.bot-message br + span {
+    margin-top: 0.25rem;
+}
     </style>
 </head>
 <body>
-    <div class="max-w-2xl mx-auto h-screen flex flex-col">
+    <div class="max-w-2xl mx-auto h-screen flex flex-col p-4">
         <!-- Header -->
-        <header class="bg-gray-900 p-4 flex items-center gap-3">
-            <div class="w-10 h-10 rounded-full bg-[var(--neon-blue)] flex items-center justify-center">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold text-[var(--neon-blue)]">PharmaSummarizer</h1>
-                <p class="text-sm text-[var(--neon-green)]">DeepSeek-R1 8B</p>
+        <header class="header-container p-4 rounded-t-lg shadow-sm transition-colors">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-r from-indigo-500 to-blue-500 flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">PharmaSummarizer</h1>
+                        <p class="text-sm opacity-70" id="modelInfo">DeepSeek-R1 8B</p>
+                    </div>
+                </div>
+                <!-- Theme Toggle -->
+                <button id="themeToggle" class="theme-toggle p-2 rounded-full hover:bg-opacity-20 hover:bg-gray-500">
+                    <!-- Sun icon (shown in dark mode) -->
+                    <svg id="sunIcon" class="w-6 h-6 text-yellow-300 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    <!-- Moon icon (shown in light mode) -->
+                    <svg id="moonIcon" class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                    </svg>
+                </button>
             </div>
         </header>
 
         <!-- Chat Container -->
-        <div class="chat-container flex-1 overflow-y-auto p-4" id="chatContainer">
+        <div class="chat-container flex-1 overflow-y-auto p-4 my-4 custom-scrollbar shadow-sm" id="chatContainer">
             <!-- Messages will be inserted here -->
         </div>
 
         <!-- Typing Indicator -->
         <div class="typing-indicator pl-4" id="typingIndicator">
             <div class="flex items-center gap-2">
-                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse"></div>
-                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse" style="animation-delay: 0.2s"></div>
-                <div class="w-2 h-2 rounded-full bg-[var(--neon-orange)] animate-pulse" style="animation-delay: 0.4s"></div>
+                <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></div>
+                <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse" style="animation-delay: 0.2s"></div>
+                <div class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse" style="animation-delay: 0.4s"></div>
             </div>
         </div>
 
         <!-- Input Area -->
-        <div class="input-area p-4">
+        <div class="input-area p-4 rounded-b-lg shadow-sm border-t">
             <form id="chatForm" class="flex gap-2">
-                <input type="text" id="messageInput" 
-                    class="flex-1 rounded-full px-4 py-3 bg-gray-800 text-white border-2 border-[var(--neon-blue)] focus:outline-none focus:border-[var(--neon-green)] transition-colors"
-                    placeholder="Enter pharmaceutical text...">
+                <textarea id="messageInput" 
+                    class="message-input flex-1 rounded-lg px-4 py-3 
+                           focus:outline-none focus:ring-2 focus:ring-blue-500 
+                           focus:border-transparent transition-colors resize-none"
+                    placeholder="Enter pharmaceutical text..." rows="2"></textarea>
                 <button type="submit" 
-                    class="bg-[var(--neon-blue)] text-black px-6 py-2 rounded-full hover:bg-[var(--neon-green)] transition-colors flex items-center gap-2">
+                    class="send-button px-6 py-3 rounded-lg flex items-center gap-2 bg-gradient-to-r from-indigo-500 to-blue-500 hover:from-indigo-600 hover:to-blue-600">
                     <span>Send</span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                     </svg>
                 </button>
             </form>
+        </div>
+
+        <!-- Error Toast (Hidden by default) -->
+        <div id="errorToast" class="fixed bottom-4 right-4 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg transform transition-transform duration-300 translate-y-20 opacity-0 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span id="errorMessage">Something went wrong</span>
         </div>
     </div>
 
@@ -122,6 +234,51 @@
         const typingIndicator = document.getElementById('typingIndicator');
         const chatForm = document.getElementById('chatForm');
         const messageInput = document.getElementById('messageInput');
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = document.getElementById('sunIcon');
+        const moonIcon = document.getElementById('moonIcon');
+        const errorToast = document.getElementById('errorToast');
+        const errorMessage = document.getElementById('errorMessage');
+        const modelInfo = document.getElementById('modelInfo');
+
+        // Update theme icons based on current theme
+        function updateThemeIcons() {
+            const isDarkMode = document.documentElement.classList.contains('dark');
+            if (isDarkMode) {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            } else {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            }
+        }
+        
+        // Initialize theme icons
+        updateThemeIcons();
+
+        // Theme toggle functionality
+        themeToggle.addEventListener('click', () => {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+            
+            // Update theme icons after toggling
+            updateThemeIcons();
+        });
+
+        // Fetch model info on load
+        fetch('/api/models')
+            .then(response => response.json())
+            .then(data => {
+                if (data.current_model) {
+                    modelInfo.textContent = data.current_model;
+                }
+            })
+            .catch(error => console.error('Error fetching model info:', error));
 
         function getCurrentTime() {
             return new Date().toLocaleTimeString('en-US', { 
@@ -131,23 +288,104 @@
             });
         }
 
-        function addMessage(content, isUser = false) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message-bubble ${isUser ? 'user-message' : 'bot-message'}`;
+        function showErrorToast(message) {
+            errorMessage.textContent = message;
+            errorToast.classList.remove('translate-y-20', 'opacity-0');
+            errorToast.classList.add('shake');
             
-            const messageContent = document.createElement('div');
-            messageContent.textContent = content;
-            
-            const timestamp = document.createElement('div');
-            timestamp.className = 'message-timestamp';
-            timestamp.textContent = getCurrentTime();
-            
-            messageDiv.appendChild(messageContent);
-            messageDiv.appendChild(timestamp);
-            
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+            setTimeout(() => {
+                errorToast.classList.remove('shake');
+                errorToast.classList.add('translate-y-20', 'opacity-0');
+            }, 5000);
         }
+
+        // Replace the addMessage function in your JavaScript
+function addMessage(content, isUser = false, isError = false, isHtml = false) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message-bubble ${isUser ? 'user-message' : 'bot-message'}`;
+    
+    if (isError) {
+        messageDiv.style.backgroundColor = '#fee2e2';
+        messageDiv.style.color = '#b91c1c';
+        
+        if (document.documentElement.classList.contains('dark')) {
+            messageDiv.style.backgroundColor = '#7f1d1d';
+            messageDiv.style.color = '#fecaca';
+        }
+    }
+    
+    const messageContent = document.createElement('div');
+    if (isHtml) {
+        messageContent.innerHTML = content;
+    } else {
+        messageContent.textContent = content;
+    }
+    
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.textContent = getCurrentTime();
+    
+    messageDiv.appendChild(messageContent);
+    messageDiv.appendChild(timestamp);
+    
+    // Add animation
+    messageDiv.style.opacity = '0';
+    messageDiv.style.transform = 'translateY(10px)';
+    messageDiv.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    
+    chatContainer.appendChild(messageDiv);
+    
+    // Trigger animation
+    setTimeout(() => {
+        messageDiv.style.opacity = '1';
+        messageDiv.style.transform = 'translateY(0)';
+    }, 10);
+    
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+// Update the chat form submission handler to use HTML content
+chatForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const message = messageInput.value.trim();
+    if (!message) return;
+
+    // Add user message
+    addMessage(message, true);
+    messageInput.value = '';
+    messageInput.style.height = 'auto';
+
+    // Show typing indicator
+    showTypingIndicator();
+
+    try {
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message })
+        });
+
+        const data = await response.json();
+        
+        // Hide typing indicator
+        hideTypingIndicator();
+        
+        if (data.error) {
+            showErrorToast(data.error);
+            addMessage(data.response, false, true);
+        } else {
+            // Use HTML formatting if available
+            addMessage(data.response, false, false, data.is_html === true);
+        }
+    } catch (error) {
+        hideTypingIndicator();
+        addMessage("Sorry, I encountered an error processing your request. Please try again.", false, true);
+        showErrorToast("Connection error. Is the server running?");
+        console.error('Error:', error);
+    }
+});
 
         function showTypingIndicator() {
             typingIndicator.classList.add('active');
@@ -157,6 +395,27 @@
             typingIndicator.classList.remove('active');
         }
 
+        // Auto-resize textarea
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        // Welcome message on load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                addMessage("Welcome to PharmaSummarizer! Enter pharmaceutical text, and I'll provide a concise summary with key information.");
+            }, 500);
+        });
+
+        // Handle Enter key to submit (with shift+enter for new line)
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
         chatForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const message = messageInput.value.trim();
@@ -165,6 +424,7 @@
             // Add user message
             addMessage(message, true);
             messageInput.value = '';
+            messageInput.style.height = 'auto';
 
             // Show typing indicator
             showTypingIndicator();
@@ -180,17 +440,32 @@
 
                 const data = await response.json();
                 
-                // Hide typing indicator and add bot response
+                // Hide typing indicator
                 hideTypingIndicator();
+                
                 if (data.error) {
-                    addMessage('Sorry, I encountered an error. Please try again.');
+                    showErrorToast(data.error);
+                    addMessage(data.response, false, true);
                 } else {
                     addMessage(data.response);
                 }
             } catch (error) {
                 hideTypingIndicator();
-                addMessage('Sorry, I encountered an error. Please try again.');
+                addMessage("Sorry, I encountered an error processing your request. Please try again.", false, true);
+                showErrorToast("Connection error. Is the server running?");
                 console.error('Error:', error);
+            }
+        });
+
+        // Listen for system theme changes and update accordingly
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!('theme' in localStorage)) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+                updateThemeIcons();
             }
         });
     </script>
